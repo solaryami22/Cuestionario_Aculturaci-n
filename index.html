@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aculturación</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for Pie Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-indigo-50 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <header class="bg-white shadow-sm border-b border-slate-200 py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 text-white p-2 rounded-xl font-bold shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold text-slate-900">Aculturación (100 Preguntas)</h1>
+            </div>
+            <div id="header-user-badge" class="hidden text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full font-medium border border-indigo-100 flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span id="display-username"></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow">
+
+        <!-- Welcome Step: Collect User Name -->
+        <section id="step-welcome" class="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 fade-in max-w-xl mx-auto my-12">
+            <div class="text-center mb-6">
+                <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Bienvenido</span>
+                <h2 class="text-3xl font-bold text-slate-900 mt-3">Cuestionario Aculturacion</h2>
+                <p class="text-slate-600 mt-2">Por favor, introduce tu nombre para registrar tus respuestas en las 5 Dimensiones (100 preguntas en total).</p>
+            </div>
+            
+            <form id="form-name" onsubmit="startQuestionnaire(event)" class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-slate-700 mb-1">Nombre Completo</label>
+                    <input type="text" id="username" required placeholder="Ej. Ana María Gómez"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-800">
+                    <label for="etnia" class="block text-sm font-medium text-slate-700 mb-1">Etnia a la que pertenece</label>
+                        <input type="text" id="etnia" required placeholder="Ej. Aymara"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-slate-800">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-indigo-200 transition duration-200 flex items-center justify-center space-x-2">
+                    <span>Comenzar Cuestionario</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </form>
+        </section>
+
+        <!-- Questionnaire Step -->
+        <section id="step-questionnaire" class="hidden space-y-6 fade-in">
+            <!-- Progress Bar and Header -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <span id="section-badge" class="text-xs font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full uppercase">Dimensión 1 de 5</span>
+                    <h3 id="section-title" class="text-xl font-bold text-slate-900 mt-1">Título de la Dimensión</h3>
+                </div>
+                <div class="w-full sm:w-64 bg-slate-100 rounded-full h-3 overflow-hidden">
+                    <div id="progress-bar" class="bg-indigo-600 h-3 rounded-full transition-all duration-300" style="width: 20%"></div>
+                </div>
+            </div>
+
+            <!-- Form Table Container -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <!-- Header row for options -->
+                <div class="bg-slate-50 border-b border-slate-200 px-6 py-3.5 grid grid-cols-12 gap-4 items-center">
+                <div class="col-span-1 text-xs font-bold uppercase tracking-wider text-slate-500">Nº</div>
+                <div class="col-span-6 sm:col-span-7 text-xs font-bold uppercase tracking-wider text-slate-500">Pregunta</div>
+                <div class="col-span-5 sm:col-span-4 grid grid-cols-3 text-center text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <span>Siempre</span>
+                    <span>A veces</span>
+                    <span>Nunca</span>
+                </div>
+            </div>
+
+                <!-- Questions Rows -->
+                <div id="questions-container" class="divide-y divide-slate-100">
+                    <!-- Dynamic form rows go here -->
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between pt-4">
+                <button id="btn-prev" onclick="prevSection()" class="hidden bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3 px-6 rounded-xl shadow-sm transition">
+                    Anterior
+                </button>
+                <button id="btn-next" onclick="nextSection()" class="ml-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-xl shadow-lg shadow-indigo-200 transition">
+                    Siguiente Dimensión y Ver Gráfico
+                </button>
+            </div>
+        </section>
+
+        <!-- Section Summary Step -->
+        <section id="step-section-summary" class="hidden bg-white rounded-2xl shadow-xl border border-slate-100 p-8 fade-in max-w-2xl mx-auto">
+            <div class="text-center mb-6">
+                <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Dimensión Completada</span>
+                <h3 id="summary-section-title" class="text-2xl font-bold text-slate-900 mt-2">Resumen de Dimensión</h3>
+                <p class="text-slate-600 text-sm mt-1">Aquí tienes el recuento y porcentaje de tus respuestas en esta dimensión.</p>
+            </div>
+
+            <!-- Counts Grid -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-center">
+                    <span class="block text-xs font-semibold text-emerald-600 uppercase">Siempre</span>
+                    <span id="count-siempre" class="text-2xl font-bold text-emerald-700">0</span>
+                    <span id="percent-siempre" class="block text-xs text-emerald-500 font-medium">0%</span>
+                </div>
+                <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl text-center">
+                    <span class="block text-xs font-semibold text-amber-600 uppercase">A veces</span>
+                    <span id="count-aveces" class="text-2xl font-bold text-amber-700">0</span>
+                    <span id="percent-aveces" class="block text-xs text-amber-500 font-medium">0%</span>
+                </div>
+                <div class="bg-rose-50 border border-rose-100 p-4 rounded-xl text-center">
+                    <span class="block text-xs font-semibold text-rose-600 uppercase">Nunca</span>
+                    <span id="count-nunca" class="text-2xl font-bold text-rose-700">0</span>
+                    <span id="percent-nunca" class="block text-xs text-rose-500 font-medium">0%</span>
+                </div>
+            </div>
+
+            <!-- Chart Canvas -->
+            <div class="relative w-full max-w-xs mx-auto h-64 mb-6">
+                <canvas id="sectionChart"></canvas>
+            </div>
+
+            <button onclick="resumeQuestionnaire()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-indigo-200 transition">
+                Continuar con la Siguiente Dimensión
+            </button>
+        </section>
+
+        <!-- Global Summary Step -->
+        <section id="step-global-summary" class="hidden bg-white rounded-2xl shadow-xl border border-slate-100 p-8 fade-in max-w-3xl mx-auto">
+            <div class="text-center mb-6">
+                <span class="bg-indigo-100 text-indigo-800 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Cuestionario Finalizado</span>
+                <h2 class="text-3xl font-bold text-slate-900 mt-2">¡Felicitaciones, <span id="final-username" class="text-indigo-600"></span>!</h2>
+                <p class="text-slate-600 mt-1">Has respondido exitosamente las 100 preguntas del cuestionario.</p>
+            </div>
+
+            <!-- Global Counts Grid -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl text-center">
+                    <span class="block text-xs font-semibold text-emerald-600 uppercase">Total Siempre</span>
+                    <span id="global-count-siempre" class="text-2xl font-bold text-emerald-700">0</span>
+                    <span id="global-percent-siempre" class="block text-xs text-emerald-500 font-medium">0%</span>
+                </div>
+                <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl text-center">
+                    <span class="block text-xs font-semibold text-amber-600 uppercase">Total A veces</span>
+                    <span id="global-count-aveces" class="text-2xl font-bold text-amber-700">0</span>
+                    <span id="global-percent-aveces" class="block text-xs text-amber-500 font-medium">0%</span>
+                </div>
+                <div class="bg-rose-50 border border-rose-100 p-4 rounded-xl text-center">
+                    <span class="block text-xs font-semibold text-rose-600 uppercase">Total Nunca</span>
+                    <span id="global-count-nunca" class="text-2xl font-bold text-rose-700">0</span>
+                    <span id="global-percent-nunca" class="block text-xs text-rose-500 font-medium">0%</span>
+                </div>
+            </div>
+
+            <!-- Global Chart Canvas -->
+            <div class="relative w-full max-w-xs mx-auto h-72 mb-8">
+                <canvas id="globalChart"></canvas>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="exportResults()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg shadow-emerald-200 transition flex items-center justify-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>Guardar / Exportar Resultados</span>
+                </button>
+                <button onclick="restartQuestionnaire()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 px-6 rounded-xl transition flex items-center justify-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>Reiniciar Cuestionario</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500 mt-12">
+        
+    </footer>
+
+    <!-- Custom Modal for Alerts/Messages -->
+    <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl text-center space-y-4">
+            <div id="modal-icon" class="mx-auto w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-xl">!</div>
+            <h4 id="modal-title" class="text-lg font-bold text-slate-900">Atención</h4>
+            <p id="modal-message" class="text-sm text-slate-600">Por favor responde todas las preguntas de la sección.</p>
+            <button onclick="closeModal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-xl transition">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data Structure: 5 sections of 20 questions each = 100 questions
+        const sectionsData = [
+            {
+                title: "DIMENSIÒN LENGUA Y COMUNICACIÒN:",
+                questions: [
+        "Me identifico con la cultura de mis antepasados.",
+        "Practico las tradiciones culturales de mi familia.",
+        "Participo en celebraciones culturales tradicionales.",
+        "Siento orgullo por mi herencia cultural.",
+        "Conozco la historia de mi comunidad.",
+        "Mis costumbres culturales influyen en mis decisiones diarias.",
+        "Transmito valores culturales a los jóvenes de mi familia o comunidad.",
+        "Siento que mi cultura es respetada en mi entorno.",
+        "Me preocupo por preservar las tradiciones culturales.",
+        "Creo que mi identidad cultural es única y valiosa.",
+        "Participo en grupos o asociaciones culturales.",
+        "Valoro las enseñanzas de mis antepasados.",
+        "Mi comunidad cultural influye en mi forma de relacionarme socialmente.",
+        "Me esfuerzo por aprender o conservar prácticas tradicionales.",
+        "Considero que mi cultura puede coexistir con otras culturas",
+        "Me siento conectado/a con otras personas de mí misma cultura.",
+        "Rechazo la pérdida de costumbres tradicionales.",
+        "Busco oportunidades para enseñar sobre mi cultura.",
+        "Me siento orgulloso/a de mi lengua, comida y vestimenta tradicional.",
+        "La cultura de mi comunidad influye en mis creencias y valores.",
+    ]
+                
+            },
+            {
+                title: "DIMENSIÒN LENGUA Y COMUNICACIÒN:",
+                questions: [
+        "Hablo mi lengua materna u originaria en casa.",
+        "Uso mi lengua cultural en la vida cotidiana.",
+        "Prefiero comunicarme en una lengua dominante (español, inglés, etc.).",
+        "Aprendo palabras o expresiones de otras culturas.",
+        "Considero importante conservar mi lengua originaria.",
+        "Enseño mi lengua materna a los hijos o familiares.",
+        "Evito usar mi lengua por temor a discriminación.",
+        "Uso mi lengua originaria en contextos sociales y culturales.",
+        "Me siento cómodo/a comunicándome en idiomas extranjeros.",
+        "Mi lengua influye en mi sentido de pertenencia cultural.",
+        "Mis amigos o colegas conocen mi lengua originaria.",
+        "Uso ambas lenguas (originaria y dominante) según la situación.",
+        "La lengua dominante ha modificado mi forma de pensar o expresarme.",
+        "Valoro la preservación de idiomas de mi cultura.",
+        "Considero que la lengua es un elemento clave de identidad cultural.",
+        "Hablar otra lengua me ha ayudado a integrarme socialmente.",
+        "Me siento cómodo/a enseñando mi lengua a otros.",
+        "He aprendido expresiones de otras culturas para integrarme.",
+        "Mi lengua originaria se usa en actividades comunitarias.",
+        "Percibo que mi lengua ha perdido importancia frente a otras."
+    ]
+            },
+            {
+                title: "DIMENSIÒN COSTUMBRES Y PRÁCTICAS CULTURALES: ",
+                questions: [
+        "Mi vestimenta refleja mi cultura de origen.",
+        "He adoptado vestimentas de otras culturas.",
+        "Mantengo alimentos tradicionales en mi dieta.",
+        "Consumo alimentos de culturas externas.",
+        "Mis costumbres han cambiado por la influencia de otras culturas.",
+        "Participo en rituales tradicionales de mi comunidad.",
+        "He dejado de practicar costumbres tradicionales.",
+        "Combino costumbres propias con prácticas externas.",
+        "Considero que mis tradiciones están en riesgo.",
+        "La cultura dominante influye en mis hábitos diarios.",
+        "Mis celebraciones siguen las costumbres tradicionales.",
+        "He adoptado festividades externas a mi cultura",
+        "Mis habilidades culturales (arte, música, danza) reflejan mi herencia.",
+        "Practico actividades culturales de otras comunidades.",
+        "Mis prácticas culturales me conectan con mi identidad.",
+        "Mis hijos o familiares participan en costumbres tradicionales.",
+        "Mi comunidad valora las tradiciones locales.",
+        "He modificado mis prácticas culturales para adaptarme socialmente.",
+        "Combinar tradiciones no afecta mi sentido de identidad.",
+        "La globalización ha influido en mis hábitos culturales."
+    ]
+            },
+            {
+                title: "DIMENSIÒN DE VALORES CREENCIAS Y RELIGIÓN: ",
+                questions: [
+        "Mis valores provienen de mi cultura de origen.",
+        "He adoptado valores de otras culturas",
+        "Practico la religión tradicional de mi comunidad.",
+        "He cambiado de creencias o religión con el tiempo.",
+        "Mis creencias influyen en mi comportamiento social.",
+        "Respeto creencias distintas a las mías.",
+        "He modificado valores por influencia externa.",
+        "Siento conflicto entre valores tradicionales y modernos.",
+        "Mis creencias siguen siendo importantes para mí.",
+        "La religión ha influido en mi proceso de aculturación.",
+        "Valoro la ética y normas de mi comunidad cultural.",
+        "Las prácticas religiosas externas han impactado mi identidad.",
+        "Mis creencias tradicionales se reflejan en mis decisiones familiares.",
+        "Siento que algunas prácticas culturales externas son útiles",
+        "La educación formal ha influido en mis valores.",
+        "Mis valores culturales se transmiten a otras personas.",
+        "El contacto con otras culturas ha enriquecido mi visión del mundo.",
+        "Considero que mis valores culturales deben mantenerse pese a influencias externas.",
+        "Evalúo críticamente los cambios en mis creencias",
+        "La aculturación ha transformado mi visión ética o moral."
+    ]
+            },
+            {
+                title: "DIMENSIÒN INFLUENCIA SOCIAL Y ADAPTACIÓN CULTURAL:",
+                questions: [
+        "He cambiado mi comportamiento para adaptarme a otra cultura.",
+        "Me siento presionado/a adoptar costumbres ajenas.",
+        "La educación ha influido en mi identidad cultural.",
+        "Los medios de comunicación influyen en mi cultura",
+        "La migración ha modificado mis hábitos y costumbres.",
+        "Me adapto fácilmente a nuevas culturas",
+        "He experimentado discriminación por mi cultura.",
+        "Considero positiva la mezcla cultural.",
+        "Siento que he perdido parte de mi identidad cultural.",
+        "Creo que la aculturación ha influido significativamente en mi vida.",
+        "Mis amistades influyen en mi comportamiento cultural.",
+        "Mi entorno laboral o educativo afecta mis tradiciones.",
+        "Participo en actividades culturales de otras comunidades.",
+        "La interacción con personas de otras culturas me ha enriquecido.",
+        "Cambio mis hábitos para integrarme socialmente.",
+        "La presión social influye en mi aceptación de costumbres externas.",
+        "Los valores de otras culturas me han enseñado nuevas perspectivas.",
+        "He modificado mis tradiciones para evitar conflictos.",
+        "Las políticas o normas sociales afectan mi identidad cultural.",
+        "Considero que puedo equilibrar mis tradiciones con influencias externas."
+    ]
+            }
+        ];
+
+        let state = {
+            username: "",
+            currentSection: 0,
+            answers: Array(5).fill(null).map(() => Array(20).fill(null))
+        };
+
+        let sectionChartInstance = null;
+        let globalChartInstance = null;
+
+        function showModal(title, message) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        function startQuestionnaire(event) {
+            event.preventDefault();
+            const nameInput = document.getElementById('username').value.trim();
+            if (!nameInput) {
+                showModal("Nombre requerido", "Por favor ingresa tu nombre completo para continuar.");
+                return;
+            }
+            state.username = nameInput;
+            document.getElementById('display-username').innerText = state.username;
+            document.getElementById('header-user-badge').classList.remove('hidden');
+
+            document.getElementById('step-welcome').classList.add('hidden');
+            document.getElementById('step-questionnaire').classList.remove('hidden');
+            renderSection();
+        }
+
+        function renderSection() {
+            const secIndex = state.currentSection;
+            const section = sectionsData[secIndex];
+
+            document.getElementById('section-badge').innerText = `Dimensión ${secIndex + 1} de 5`;
+            document.getElementById('section-title').innerText = section.title;
+            
+            const progressPercent = ((secIndex + 1) / 5) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            section.questions.forEach((qText, qIdx) => {
+                const currentAns = state.answers[secIndex][qIdx];
+                const row = document.createElement('div');
+                row.className = "px-6 py-4 grid grid-cols-12 gap-4 items-center hover:bg-slate-50/80 transition";
+                row.innerHTML = `
+                    <div class="col-span-7 sm:col-span-8 text-sm sm:text-base font-medium text-slate-800 flex items-start space-x-2">
+                        <span class="text-indigo-600 font-bold shrink-0">${qIdx + 1}.</span>
+                        <span>${qText}</span>
+                    </div>
+                    <div class="col-span-5 sm:col-span-4 grid grid-cols-3 text-center items-center">
+                        <div class="flex justify-center">
+                            <input type="radio" name="q_${secIndex}_${qIdx}" value="Siempre" ${currentAns === 'Siempre' ? 'checked' : ''} onclick="setAnswer(${secIndex}, ${qIdx}, 'Siempre')" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer">
+                        </div>
+                        <div class="flex justify-center">
+                            <input type="radio" name="q_${secIndex}_${qIdx}" value="A veces" ${currentAns === 'A veces' ? 'checked' : ''} onclick="setAnswer(${secIndex}, ${qIdx}, 'A veces')" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer">
+                        </div>
+                        <div class="flex justify-center">
+                            <input type="radio" name="q_${secIndex}_${qIdx}" value="Nunca" ${currentAns === 'Nunca' ? 'checked' : ''} onclick="setAnswer(${secIndex}, ${qIdx}, 'Nunca')" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 cursor-pointer">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            const btnPrev = document.getElementById('btn-prev');
+            if (secIndex > 0) {
+                btnPrev.classList.remove('hidden');
+            } else {
+                btnPrev.classList.add('hidden');
+            }
+
+            const btnNext = document.getElementById('btn-next');
+            if (secIndex === sectionsData.length - 1) {
+                btnNext.innerText = "Ver Resultados Finales y Torta Global";
+            } else {
+                btnNext.innerText = "Siguiente Dimensión y Ver Gráfico";
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setAnswer(secIdx, qIdx, val) {
+            state.answers[secIdx][qIdx] = val;
+        }
+
+        function nextSection() {
+            const secIndex = state.currentSection;
+            const currentAnswers = state.answers[secIndex];
+            
+            // Validate all 20 questions are answered
+            const unanswered = currentAnswers.filter(ans => ans === null).length;
+            if (unanswered > 0) {
+                showModal("Preguntas pendientes", `Por favor responde las ${unanswered} preguntas restantes en esta Dimensión antes de continuar.`);
+                return;
+            }
+
+            // Show section summary chart view
+            showSectionSummary(secIndex);
+        }
+
+        function prevSection() {
+            if (state.currentSection > 0) {
+                state.currentSection--;
+                renderSection();
+            }
+        }
+
+        function showSectionSummary(secIdx) {
+            const currentAnswers = state.answers[secIdx];
+            const siempreCount = currentAnswers.filter(a => a === 'Siempre').length;
+            const avecesCount = currentAnswers.filter(a => a === 'A veces').length;
+            const nuncaCount = currentAnswers.filter(a => a === 'Nunca').length;
+
+            document.getElementById('summary-section-title').innerText = sectionsData[secIdx].title;
+            document.getElementById('count-siempre').innerText = siempreCount;
+            document.getElementById('percent-siempre').innerText = `${((siempreCount / 20) * 100).toFixed(1)}%`;
+
+            document.getElementById('count-aveces').innerText = avecesCount;
+            document.getElementById('percent-aveces').innerText = `${((avecesCount / 20) * 100).toFixed(1)}%`;
+
+            document.getElementById('count-nunca').innerText = nuncaCount;
+            document.getElementById('percent-nunca').innerText = `${((nuncaCount / 20) * 100).toFixed(1)}%`;
+
+            document.getElementById('step-questionnaire').classList.add('hidden');
+            document.getElementById('step-section-summary').classList.remove('hidden');
+
+            renderPieChart('sectionChart', [siempreCount, avecesCount, nuncaCount], ['Siempre', 'A veces', 'Nunca'], ['#3BE6F5', '#FFD200', '#29ED22']);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resumeQuestionnaire() {
+            document.getElementById('step-section-summary').classList.add('hidden');
+            if (state.currentSection < sectionsData.length - 1) {
+                state.currentSection++;
+                document.getElementById('step-questionnaire').classList.remove('hidden');
+                renderSection();
+            } else {
+                showGlobalSummary();
+            }
+        }
+
+        function showGlobalSummary() {
+            const allAnswersFlat = state.answers.flat();
+            const gSiempre = allAnswersFlat.filter(a => a === 'Siempre').length;
+            const gAveces = allAnswersFlat.filter(a => a === 'A veces').length;
+            const gNunca = allAnswersFlat.filter(a => a === 'Nunca').length;
+
+            document.getElementById('final-username').innerText = state.username;
+
+            document.getElementById('global-count-siempre').innerText = gSiempre;
+            document.getElementById('global-percent-siempre').innerText = `${((gSiempre / 100) * 100).toFixed(1)}%`;
+
+            document.getElementById('global-count-aveces').innerText = gAveces;
+            document.getElementById('global-percent-aveces').innerText = `${((gAveces / 100) * 100).toFixed(1)}%`;
+
+            document.getElementById('global-count-nunca').innerText = gNunca;
+            document.getElementById('global-percent-nunca').innerText = `${((gNunca / 100) * 100).toFixed(1)}%`;
+
+            document.getElementById('step-global-summary').classList.remove('hidden');
+
+            renderPieChart('globalChart', [gSiempre, gAveces, gNunca], ['Siempre', 'A veces', 'Nunca'], ['#3BE6F5', '#FFD200', '#29ED22']);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderPieChart(canvasId, dataValues, labels, bgColors) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            if (canvasId === 'sectionChart' && sectionChartInstance) {
+                sectionChartInstance.destroy();
+            }
+            if (canvasId === 'globalChart' && globalChartInstance) {
+                globalChartInstance.destroy();
+            }
+
+            const chartObj = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataValues,
+                        backgroundColor: bgColors,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Inter',
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (canvasId === 'sectionChart') sectionChartInstance = chartObj;
+            if (canvasId === 'globalChart') globalChartInstance = chartObj;
+        }
+
+        function exportResults() {
+            const allAnswersFlat = state.answers.flat();
+            const gSiempre = allAnswersFlat.filter(a => a === 'Siempre').length;
+            const gAveces = allAnswersFlat.filter(a => a === 'A veces').length;
+            const gNunca = allAnswersFlat.filter(a => a === 'Nunca').length;
+
+            const report = `RESULTADOS DE CUESTIONARIO INTEGRAL\n` +
+                           `===================================\n` +
+                           `Participante: ${state.username}\n` +
+                           `Fecha: ${new Date().toLocaleDateString()}\n\n` +
+                           `RESUMEN GLOBAL (100 PREGUNTAS):\n` +
+                           `- Siempre: ${gSiempre} (${((gSiempre / 100) * 100).toFixed(1)}%)\n` +
+                           `- A veces: ${gAveces} (${((gAveces / 100) * 100).toFixed(1)}%)\n` +
+                           `- Nunca: ${gNunca} (${((gNunca / 100) * 100).toFixed(1)}%)\n`;
+
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Resultados_${state.username.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function restartQuestionnaire() {
+            state = {
+                username: "",
+                currentSection: 0,
+                answers: Array(5).fill(null).map(() => Array(20).fill(null))
+            };
+            document.getElementById('form-name').reset();
+            document.getElementById('header-user-badge').classList.add('hidden');
+            document.getElementById('step-global-summary').classList.add('hidden');
+            document.getElementById('step-welcome').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
